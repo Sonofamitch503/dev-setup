@@ -12,7 +12,16 @@ FAILED=()
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m  ! %s\033[0m\n' "$1"; FAILED+=("$1"); }
 
-# 1. Homebrew (also installs Apple's command line tools, which include git)
+# 0. Apple's developer tools (git, compilers). A fresh Mac doesn't have them.
+step "Apple developer tools"
+if ! xcode-select -p >/dev/null 2>&1; then
+  xcode-select --install 2>/dev/null
+  echo "  A window popped up: click Install, then Agree. This script waits and carries on by itself."
+  until xcode-select -p >/dev/null 2>&1; do sleep 10; done
+  echo "  Developer tools installed."
+fi
+
+# 1. Homebrew
 step "Homebrew - may ask for your Mac password"
 if ! command -v brew >/dev/null && [ ! -x /opt/homebrew/bin/brew ]; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
