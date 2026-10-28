@@ -1,0 +1,7 @@
+{
+    "claudeCode.preferredLocation": "panel",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
+    "workbench.startupEditor": "none",
+    "claudeCode.hideOnboarding": true,
+    "bonesInc.enabled": true
+}
