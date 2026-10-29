@@ -57,12 +57,34 @@ EOF
   fi
 }
 
+# Old Claude conversations and memories from the PC ($ROOT/_claude-archive/projects),
+# refiled under the Mac folder names Claude Code looks for. Never overwrites.
+import_claude_archive() {
+  local arch="$ROOT/_claude-archive/projects" win lower dest
+  [ -d "$arch" ] || return 0
+  local home_slug proj_slug
+  home_slug=$(printf '%s' "$HOME" | sed 's/[^A-Za-z0-9]/-/g')
+  proj_slug=$(printf '%s' "$ROOT" | sed 's/[^A-Za-z0-9]/-/g')
+  echo "  Importing old Claude conversations and memories"
+  for d in "$arch"/*/; do
+    win=$(basename "$d"); lower=$(printf '%s' "$win" | tr '[:upper:]' '[:lower:]')
+    case "$lower" in
+      c--users-meech-documents-projects*) dest="$proj_slug${win:33}" ;;  # 33 = length of that prefix
+      c--users-meech) dest="$home_slug" ;;
+      *) continue ;;  # Claude desktop scratch folders: kept in the archive only
+    esac
+    mkdir -p "$HOME/.claude/projects/$dest"
+    cp -Rn "$d". "$HOME/.claude/projects/$dest/" 2>/dev/null
+  done
+}
+
 if [ $# -gt 0 ]; then
   for d in "$@"; do fix_one "$(cd "$d" && pwd)"; done
 else
   [ -d "$ROOT" ] || { echo "No projects folder at $ROOT (set NP_ROOT)"; exit 1; }
   echo "Fixing projects in $ROOT"
   for d in "$ROOT"/*/; do fix_one "${d%/}"; done
+  import_claude_archive
 fi
 
 if [ ${#FAILED[@]} -gt 0 ]; then
