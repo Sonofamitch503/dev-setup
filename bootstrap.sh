@@ -26,9 +26,12 @@ step "Homebrew - may ask for your Mac password"
 if ! command -v brew >/dev/null && [ ! -x /opt/homebrew/bin/brew ]; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
-grep -q 'brew shellenv' "$HOME/.zprofile" 2>/dev/null ||
-  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+BREW=$([ -x /opt/homebrew/bin/brew ] && echo /opt/homebrew/bin/brew || echo /usr/local/bin/brew)  # Apple Silicon or Intel
+eval "$("$BREW" shellenv)"
+# New terminals need the same line; replace any earlier one that pointed at the wrong brew
+touch "$HOME/.zprofile"
+grep -v 'brew shellenv' "$HOME/.zprofile" > "$HOME/.zprofile.tmp"; mv "$HOME/.zprofile.tmp" "$HOME/.zprofile"
+echo "eval \"\$($BREW shellenv)\"" >> "$HOME/.zprofile"
 
 # 2. This setup repo
 step "Setup files"
